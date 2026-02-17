@@ -18,8 +18,14 @@ def processar_pacote(packet):
             info_portas = f" | Portas: {packet[UDP].sport} -> {packet[UDP].dport}"
 
         msg = f"[{proto_nome}] {ip_origem} -> {ip_destino}{info_portas}"
-        print(msg)
+        
+        # Adição do Payload
+        if packet.haslayer(Raw):
+            payload = repr(packet[Raw].load[:60])
+            msg += f" | Dados: {payload}"
 
+        print(msg)
+        
 def iniciar_sniffing(interface=None):
     print("Iniciando Monitoramento de Rede...")
     try:
