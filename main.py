@@ -1,5 +1,16 @@
 import logging
-from scapy.all import sniff, IP, TCP, UDP
+from scapy.all import sniff, IP, TCP, UDP, Raw
+from datetime import datetime
+
+# --- Configuração do Log ---
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("analise_rede.log", encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
 
 def processar_pacote(packet):
     if packet.haslayer(IP):
@@ -24,14 +35,19 @@ def processar_pacote(packet):
             payload = repr(packet[Raw].load[:60])
             msg += f" | Dados: {payload}"
 
-        print(msg)
-        
+        logging.info(msg)
+
 def iniciar_sniffing(interface=None):
-    print("Iniciando Monitoramento de Rede...")
+    logging.info("="*50)
+    logging.info("Iniciando Monitoramento de Rede... (Ctrl+C para parar)")
+    logging.info("="*50)
+    
     try:
         sniff(iface=interface, prn=processar_pacote, store=0)
     except KeyboardInterrupt:
-        print("Captura interrompida.")
+        logging.warning("Captura interrompida.")
+    except Exception as e:
+        logging.error(f"Erro inesperado: {e}")
 
 if __name__ == "__main__":
     iniciar_sniffing()
